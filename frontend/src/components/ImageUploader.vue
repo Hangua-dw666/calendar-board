@@ -2,7 +2,7 @@
   <div>
     <div class="flex items-center gap-2 mb-2">
       <label class="terminal-btn-secondary text-sm cursor-pointer">
-        <input type="file" accept="image/*" multiple @change="onFileChange" class="hidden" />
+        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple @change="onFileChange" class="hidden" />
         上传图片
       </label>
       <span class="text-terminal-muted text-xs">支持 JPEG/PNG/GIF/WebP，最大 5MB</span>
@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { uploadImage } from '../api/upload.js'
 
 const props = defineProps({
@@ -33,29 +33,42 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-const previewImages = ref([...props.modelValue])
-
-watch(() => props.modelValue, (val) => { previewImages.value = [...val] })
+// 本地状态：包含预览中的（含上传中）和已上传的。
+// 不再 watch props.modelValue —— 避免父组件更新时重置本地队列，丢失上传中的图片。
+// 父组件保存成功后会显式调用 reset() 清空。
+const previewImages = ref(props.modelValue.map(img => ({ ...img, uploading: false })))
 
 async function onFileChange(e) {
   const files = Array.from(e.target.files)
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
   for (const file of files) {
+    if (!allowedTypes.includes(file.type)) {
+      alert(`图片 ${file.name} 格式不支持，仅支持 JPEG/PNG/GIF/WebP`)
+      continue
+    }
     if (file.size > 5 * 1024 * 1024) {
       alert(`图片 ${file.name} 超过 5MB 限制`)
       continue
     }
     const previewUrl = URL.createObjectURL(file)
-    const imgObj = { url: previewUrl, uploading: true, path: null }
+    const imgObj = { url: previewUrl, uploading: true, path: null, _blobUrl: previewUrl }
     previewImages.value.push(imgObj)
 
     try {
       const res = await uploadImage(file)
+      // 上传成功后释放 blob URL
+      if (imgObj._blobUrl) {
+        URL.revokeObjectURL(imgObj._blobUrl)
+        delete imgObj._blobUrl
+      }
       imgObj.url = res.data.url
       imgObj.path = res.data.path
       imgObj.uploading = false
       emitUpdate()
     } catch (err) {
       alert('图片上传失败: ' + (err.message || '未知错误'))
+      // 失败时也要释放 blob URL
+      if (imgObj._blobUrl) URL.revokeObjectURL(imgObj._blobUrl)
       const idx = previewImages.value.indexOf(imgObj)
       if (idx > -1) previewImages.value.splice(idx, 1)
     }
@@ -64,6 +77,9 @@ async function onFileChange(e) {
 }
 
 function removeImage(index) {
+  const img = previewImages.value[index]
+  // 释放可能残留的 blob URL
+  if (img._blobUrl) URL.revokeObjectURL(img._blobUrl)
   previewImages.value.splice(index, 1)
   emitUpdate()
 }
@@ -74,4 +90,16 @@ function emitUpdate() {
     .map(img => ({ url: img.url, path: img.path }))
   emit('update:modelValue', uploaded)
 }
+
+// 供父组件保存成功后显式调用清空
+defineExpose({
+  reset() {
+    // 释放所有残留的 blob URL
+    previewImages.value.forEach(img => {
+      if (img._blobUrl) URL.revokeObjectURL(img._blobUrl)
+    })
+    previewImages.value = []
+    emit('update:modelValue', [])
+  }
+})
 </script>

@@ -7,6 +7,7 @@
           <span class="text-terminal-muted text-sm animate-pulse">_</span>
         </h1>
         <div class="flex items-center gap-4">
+          <button @click="showCategoryManager = true" class="terminal-btn-secondary text-sm">分类管理</button>
           <button @click="calendarStore.goToToday()" class="terminal-btn-secondary text-sm">今日</button>
           <CategoryFilter v-model="filterCategoryId" :categories="categoryStore.categories" />
         </div>
@@ -21,6 +22,7 @@
     </div>
 
     <DayDetailModal :visible="showDetail" :date="selectedDate" @close="showDetail = false" @refresh="refreshData" />
+    <CategoryManager :visible="showCategoryManager" @close="showCategoryManager = false" />
   </div>
 </template>
 
@@ -35,6 +37,7 @@ import CategoryFilter from './components/CategoryFilter.vue'
 import DailyInput from './components/DailyInput.vue'
 import InspirationInput from './components/InspirationInput.vue'
 import DayDetailModal from './components/DayDetailModal.vue'
+import CategoryManager from './components/CategoryManager.vue'
 
 const calendarStore = useCalendarStore()
 const categoryStore = useCategoryStore()
@@ -44,6 +47,7 @@ const inspirationStore = useInspirationStore()
 const filterCategoryId = ref(null)
 const showDetail = ref(false)
 const selectedDate = ref('')
+const showCategoryManager = ref(false)
 
 async function refreshData() {
   const range = calendarStore.monthRange

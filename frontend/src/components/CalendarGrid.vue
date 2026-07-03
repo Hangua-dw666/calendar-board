@@ -62,13 +62,14 @@ const categoryStore = useCategoryStore()
 const emit = defineEmits(['dayClick'])
 
 const weekDays = ['一', '二', '三', '四', '五', '六', '日']
-const today = getToday()
 
 const calendarCells = computed(() => {
   const year = calendarStore.currentYear
   const month = calendarStore.currentMonth
   const daysInMonth = getDaysInMonth(year, month)
   const firstDay = getFirstDayOfMonth(year, month)
+  // 在 computed 内部获取 today，保证跨日凌晨后今日高亮自动更新
+  const today = getToday()
   const cells = []
 
   for (let i = 0; i < firstDay; i++) {
