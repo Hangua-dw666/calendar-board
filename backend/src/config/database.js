@@ -4,17 +4,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'calendar_board',
-  process.env.DB_USER || 'root',
+  process.env.DB_NAME || 'postgres',
+  process.env.DB_USER || 'postgres',
   process.env.DB_PASSWORD || '',
   {
     host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 3306,
-    dialect: 'mysql',
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
     logging: false,
     define: {
-      charset: 'utf8mb4',
-      collate: 'utf8mb4_general_ci',
+      schema: 'calendar_board',
+      timestamps: true,
     },
   }
 );
