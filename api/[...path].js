@@ -1,28 +1,11 @@
-// 诊断版本 2：动态 import backend，捕获加载错误
+import app from '../backend/src/app.js';
+
+// 让 multer 处理 multipart/form-data，禁用 Vercel 内置 bodyParser
 export const config = {
   api: { bodyParser: false },
 };
 
 export default async function handler(req, res) {
-  try {
-    const { default: app } = await import('../backend/src/app.js');
-    const pathParts = req.query.path;
-    let rest = '';
-    if (Array.isArray(pathParts)) {
-      rest = pathParts.join('/');
-    } else if (typeof pathParts === 'string') {
-      rest = pathParts;
-    }
-    req.url = '/api/' + rest;
-    return app(req, res);
-  } catch (err) {
-    res.status(500).json({
-      error: err.message,
-      name: err.name,
-      stack: err.stack ? err.stack.split('\n').slice(0, 10) : null,
-      cwd: process.cwd(),
-      nodeVersion: process.version,
-      envKeys: Object.keys(process.env).filter(k => k.startsWith('DB_') || k.startsWith('SUPABASE_')),
-    });
-  }
+  // Vercel rewrites 已保留原始 req.url（如 /api/health），直接交给 Express
+  return app(req, res);
 }
