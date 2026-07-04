@@ -39,4 +39,9 @@ async function start() {
   }
 }
 
-start();
+// 仅在被直接运行时启动（不作为模块导入时）
+if (import.meta.url === `file://${process.argv[1]}`) {
+  start();
+}
+
+export default app;
