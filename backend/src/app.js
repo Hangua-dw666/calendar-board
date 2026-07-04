@@ -14,10 +14,12 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 健康检查
-app.get('/health', (req, res) => {
+// 健康检查（同时支持 /health 和 /api/health）
+const healthHandler = (req, res) => {
   res.json({ code: 0, message: 'success', data: { status: 'ok' } });
-});
+};
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // API 路由
 app.use('/api', routes);
