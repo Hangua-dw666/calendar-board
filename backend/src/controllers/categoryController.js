@@ -51,9 +51,6 @@ export async function deleteCategory(req, res, next) {
     if (!category) {
       return res.status(404).json({ code: 404, message: '分类不存在', data: null });
     }
-    if (category.is_default) {
-      return res.status(400).json({ code: 400, message: '预设分类不可删除', data: null });
-    }
     await category.destroy();
     res.json({ code: 0, message: 'success', data: null });
   } catch (err) {

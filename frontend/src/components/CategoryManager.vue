@@ -14,8 +14,8 @@
             <div v-for="cat in dailyCategories" :key="cat.id" class="flex items-center gap-2 terminal-card p-2">
               <input type="color" v-model="cat.color" @change="onColorChange(cat)" class="w-8 h-8 rounded cursor-pointer bg-transparent border border-terminal-border" />
               <input v-model="cat.name" @change="onNameChange(cat)" class="terminal-input flex-1 py-1" :maxlength="50" />
-              <button v-if="!cat.is_default" @click="handleDelete(cat)" class="text-terminal-muted hover:text-terminal-red text-sm px-2">删除</button>
-              <span v-else class="text-terminal-muted text-xs px-2">预设</span>
+              <button @click="handleDelete(cat)" class="text-terminal-muted hover:text-terminal-red text-sm px-2">删除</button>
+              <span v-if="cat.is_default" class="text-terminal-muted text-xs px-2">原始</span>
             </div>
           </div>
           <button @click="addNew('daily')" class="terminal-btn-secondary text-sm mt-2">+ 新增日常分类</button>
@@ -28,8 +28,8 @@
             <div v-for="cat in inspirationCategories" :key="cat.id" class="flex items-center gap-2 terminal-card p-2">
               <input type="color" v-model="cat.color" @change="onColorChange(cat)" class="w-8 h-8 rounded cursor-pointer bg-transparent border border-terminal-border" />
               <input v-model="cat.name" @change="onNameChange(cat)" class="terminal-input flex-1 py-1" :maxlength="50" />
-              <button v-if="!cat.is_default" @click="handleDelete(cat)" class="text-terminal-muted hover:text-terminal-red text-sm px-2">删除</button>
-              <span v-else class="text-terminal-muted text-xs px-2">预设</span>
+              <button @click="handleDelete(cat)" class="text-terminal-muted hover:text-terminal-red text-sm px-2">删除</button>
+              <span v-if="cat.is_default" class="text-terminal-muted text-xs px-2">原始</span>
             </div>
           </div>
           <button @click="addNew('inspiration')" class="terminal-btn-secondary text-sm mt-2">+ 新增灵感分类</button>
@@ -58,7 +58,8 @@ async function onColorChange(cat) {
   try {
     await categoryStore.editCategory(cat.id, { color: cat.color })
   } catch (err) {
-    alert('修改颜色失败: ' + (err.message || '未知错误'))
+    const msg = (err && typeof err === 'object' && err.message) ? err.message : (typeof err === 'string' ? err : '未知错误')
+    alert('修改颜色失败: ' + msg)
     await categoryStore.fetchCategories()
   }
 }
@@ -70,7 +71,8 @@ async function onNameChange(cat) {
   try {
     await categoryStore.editCategory(cat.id, { name })
   } catch (err) {
-    alert('修改名称失败: ' + (err.message || '未知错误'))
+    const msg = (err && typeof err === 'object' && err.message) ? err.message : (typeof err === 'string' ? err : '未知错误')
+    alert('修改名称失败: ' + msg)
     await categoryStore.fetchCategories()
   }
 }
@@ -80,7 +82,8 @@ async function handleDelete(cat) {
   try {
     await categoryStore.removeCategory(cat.id)
   } catch (err) {
-    alert('删除失败: ' + (err.message || '未知错误'))
+    const msg = (err && typeof err === 'object' && err.message) ? err.message : (typeof err === 'string' ? err : '未知错误')
+    alert('删除失败: ' + msg)
   }
 }
 
@@ -91,7 +94,8 @@ async function addNew(type) {
   try {
     await categoryStore.addCategory({ name: name.trim(), type, color: '#6b8e4e' })
   } catch (err) {
-    alert('新增失败: ' + (err.message || '未知错误'))
+    const msg = (err && typeof err === 'object' && err.message) ? err.message : (typeof err === 'string' ? err : '未知错误')
+    alert('新增失败: ' + msg)
   }
 }
 </script>
