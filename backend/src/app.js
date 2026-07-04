@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { pathToFileURL } from 'url';
 import sequelize from './config/database.js';
 import routes from './routes/index.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
@@ -40,7 +41,9 @@ async function start() {
 }
 
 // 仅在被直接运行时启动（不作为模块导入时）
-if (import.meta.url === `file://${process.argv[1]}`) {
+// 用 pathToFileURL 兼容 Windows 路径（C:\... → file:///C:/...）
+const entryUrl = pathToFileURL(process.argv[1]).href;
+if (import.meta.url === entryUrl) {
   start();
 }
 

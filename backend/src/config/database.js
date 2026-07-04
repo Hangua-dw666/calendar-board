@@ -16,6 +16,10 @@ const sequelize = new Sequelize(
       schema: 'calendar_board',
       timestamps: true,
     },
+    dialectOptions: {
+      ssl: { require: true, rejectUnauthorized: false },
+      prepared: false,
+    },
   }
 );
 
