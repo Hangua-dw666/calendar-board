@@ -1,13 +1,9 @@
-import app from '../backend/src/app.js';
-
-// 让 multer 处理 multipart/form-data，禁用 Vercel 内置 bodyParser
+// 临时诊断版本：不依赖 backend，只回显请求信息
 export const config = {
   api: { bodyParser: false },
 };
 
 export default async function handler(req, res) {
-  // Vercel [...path] 把捕获的路径段放在 req.query.path
-  // 拼回 /api/... 让 Express router 正确匹配
   const pathParts = req.query.path;
   let rest = '';
   if (Array.isArray(pathParts)) {
@@ -15,6 +11,12 @@ export default async function handler(req, res) {
   } else if (typeof pathParts === 'string') {
     rest = pathParts;
   }
-  req.url = '/api/' + rest;
-  return app(req, res);
+  res.status(200).json({
+    ok: true,
+    echo: rest,
+    url: req.url,
+    method: req.method,
+    hasApp: false,
+    note: 'diagnostic mode - backend not loaded',
+  });
 }
