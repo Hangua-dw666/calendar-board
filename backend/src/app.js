@@ -42,9 +42,17 @@ async function start() {
 
 // 仅在被直接运行时启动（不作为模块导入时）
 // 用 pathToFileURL 兼容 Windows 路径（C:\... → file:///C:/...）
-const entryUrl = pathToFileURL(process.argv[1]).href;
-if (import.meta.url === entryUrl) {
-  start();
+// Vercel serverless 环境下 process.argv[1] 可能为 undefined，需保护
+const entryArg = process.argv[1];
+if (entryArg) {
+  try {
+    const entryUrl = pathToFileURL(entryArg).href;
+    if (import.meta.url === entryUrl) {
+      start();
+    }
+  } catch {
+    // 忽略路径转换错误（serverless 环境不启动 listen）
+  }
 }
 
 export default app;
