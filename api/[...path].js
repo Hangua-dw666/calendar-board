@@ -1,22 +1,28 @@
-// 临时诊断版本：不依赖 backend，只回显请求信息
+// 诊断版本 2：动态 import backend，捕获加载错误
 export const config = {
   api: { bodyParser: false },
 };
 
 export default async function handler(req, res) {
-  const pathParts = req.query.path;
-  let rest = '';
-  if (Array.isArray(pathParts)) {
-    rest = pathParts.join('/');
-  } else if (typeof pathParts === 'string') {
-    rest = pathParts;
+  try {
+    const { default: app } = await import('../backend/src/app.js');
+    const pathParts = req.query.path;
+    let rest = '';
+    if (Array.isArray(pathParts)) {
+      rest = pathParts.join('/');
+    } else if (typeof pathParts === 'string') {
+      rest = pathParts;
+    }
+    req.url = '/api/' + rest;
+    return app(req, res);
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+      name: err.name,
+      stack: err.stack ? err.stack.split('\n').slice(0, 10) : null,
+      cwd: process.cwd(),
+      nodeVersion: process.version,
+      envKeys: Object.keys(process.env).filter(k => k.startsWith('DB_') || k.startsWith('SUPABASE_')),
+    });
   }
-  res.status(200).json({
-    ok: true,
-    echo: rest,
-    url: req.url,
-    method: req.method,
-    hasApp: false,
-    note: 'diagnostic mode - backend not loaded',
-  });
 }
