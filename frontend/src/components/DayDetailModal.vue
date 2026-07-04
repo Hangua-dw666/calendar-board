@@ -158,13 +158,27 @@ async function saveEdit() {
 
 async function deleteDaily(id) {
   if (!confirm('确定删除这条记录吗？')) return
-  try { await dailyRecordStore.removeRecord(id); emit('refresh') }
-  catch (err) { alert('删除失败: ' + (err.message || '未知错误')) }
+  try { 
+    await dailyRecordStore.removeRecord(id); 
+    emit('refresh') 
+  }
+  catch (err) { 
+    const msg = (err && typeof err === 'object' && err.message) ? err.message : (typeof err === 'string' ? err : '未知错误')
+    alert('删除失败: ' + msg) 
+    console.error('删除 daily 失败:', err) 
+  }
 }
 
 async function deleteInspiration(id) {
   if (!confirm('确定删除这条灵感吗？')) return
-  try { await inspirationStore.removeRecord(id); emit('refresh') }
-  catch (err) { alert('删除失败: ' + (err.message || '未知错误')) }
+  try { 
+    await inspirationStore.removeRecord(id); 
+    emit('refresh') 
+  }
+  catch (err) { 
+    const msg = (err && typeof err === 'object' && err.message) ? err.message : (typeof err === 'string' ? err : '未知错误')
+    alert('删除失败: ' + msg) 
+    console.error('删除 inspiration 失败:', err) 
+  }
 }
 </script>

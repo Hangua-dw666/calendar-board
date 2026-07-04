@@ -7,11 +7,11 @@ export function notFound(req, res, next) {
 }
 
 export function errorHandler(err, req, res, next) {
-  console.error('[Error]', err.message);
+  console.error('[Error]', err?.message || 'Unknown error');
 
   // multer 错误：文件大小超限 / 文件数量超限
-  let status = err.status || 500;
-  let message = err.message || '服务器内部错误';
+  let status = err?.status || 500;
+  let message = err?.message || '服务器内部错误';
   if (err.code === 'LIMIT_FILE_SIZE') {
     status = 400;
     message = '文件大小超过限制（5MB）';

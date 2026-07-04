@@ -153,16 +153,25 @@ export async function deleteInspiration(req, res, next) {
     if (!record) {
       return res.status(404).json({ code: 404, message: '灵感不存在', data: null });
     }
-    const oldImages = await Image.findAll({
-      where: { record_type: 'inspiration', record_id: id },
-      attributes: ['supabase_path'],
+
+    await sequelize.transaction(async (t) => {
+      const oldImages = await Image.findAll({
+        where: { record_type: 'inspiration', record_id: id },
+        attributes: ['supabase_path'],
+        transaction: t,
+      });
+      await Image.destroy({
+        where: { record_type: 'inspiration', record_id: id },
+        transaction: t,
+      });
+      await record.destroy({ transaction: t });
+
+      const oldPaths = oldImages.map(i => i.supabase_path).filter(Boolean);
+      if (oldPaths.length > 0) {
+        removeSupabaseFiles(oldPaths); // 异步清理，不阻塞响应
+      }
     });
-    await Image.destroy({ where: { record_type: 'inspiration', record_id: id } });
-    await record.destroy();
-    const oldPaths = oldImages.map(i => i.supabase_path).filter(Boolean);
-    if (oldPaths.length > 0) {
-      removeSupabaseFiles(oldPaths);
-    }
+
     res.json({ code: 0, message: 'success', data: null });
   } catch (err) {
     next(err);
